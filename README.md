@@ -1,4 +1,4 @@
-# AHAB
+# Auto Auction Buyer
 
 Features:
 Scans the Auction House screen in World of Warcraft (Dragonflight version) and automatically purchases cheap items.
