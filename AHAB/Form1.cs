@@ -46,6 +46,7 @@ namespace AHAB
         int IGNORE_BTN_X = 720;
         int IGNORE_BTN_Y = 220;
         int IgnoreCounter = 0;
+        Thread checkThread;
         public Form1()
         {
             InitializeComponent();
@@ -162,16 +163,15 @@ namespace AHAB
                     firstTimeRunning = false;
                 }
 
+
+                //Sometimes too many Addons blocks the UI and Game engine shows a Warning Dialog)
+                //every 20 tick click on Ignore button if there's a dialog
                 if (IgnoreCounter > 20)
                 {
-                    ClickSomePoint(IGNORE_BTN_X, IGNORE_BTN_Y, false);
-                    Thread.Sleep(50);
                     ClickSomePoint(IGNORE_BTN_X, IGNORE_BTN_Y, true);
                     IgnoreCounter = 0;
                 }
 
-                ClickSomePoint(REFRESH_X, REFRESH_Y, false);
-                Thread.Sleep(50);
                 ClickSomePoint(REFRESH_X, REFRESH_Y, true);
                 int delay = Int32.Parse(maskedTextBox2.Text);
                 Thread.Sleep(delay / 2);
@@ -210,42 +210,22 @@ namespace AHAB
 
                 if (maxPrice >= priceint && quanityInt > numericUpDown2.Value)
                 {
-                    ClickSomePoint(FIR_AH_ITEM_X, FIR_AH_ITEM_Y, false);
-                    Thread.Sleep(100);
+
+                    //Click on first item in the list
                     ClickSomePoint(FIR_AH_ITEM_X, FIR_AH_ITEM_Y, true);
                     Thread.Sleep(100);
 
-                    ClickSomePoint(BUY_X, BUY_Y, false);
-                    Thread.Sleep(100);
+                    //Click on Buy button
                     ClickSomePoint(BUY_X, BUY_Y, true);
-
                     Thread.Sleep(100);
+                    
+                    //Click on Buy Now button after dialog shows
+                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
+                    Thread.Sleep(100);
+
                     if (!isRunning)
                         break;
-
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, false);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
-                    Thread.Sleep(50);
-                    ClickSomePoint(BUY_NOW_X, BUY_NOW_Y, true);
+                    
                     int lastgekauft = quanityInt - 1;
                     log(lastgekauft + " items were purchased");
 
@@ -286,25 +266,28 @@ namespace AHAB
 
                         Thread.Sleep(200);
 
-                        RightClickSomePoint(ITEM_X, ITEM_Y, false);
-                        Thread.Sleep(200);
+                        //Adding the bait from Backpack to Auction House
+
+                        //Select the Item from Backpack
                         RightClickSomePoint(ITEM_X, ITEM_Y, true);
                         Thread.Sleep(500);
-                        ClickSomePoint(BaitItemCount_X_Y, BaitItemCount_X_Y, false);
-                        Thread.Sleep(200);
+
+                        //Click on item count Edittext
                         ClickSomePoint(BaitItemCount_X_Y, BaitItemCount_X_Y, true);
                         Thread.Sleep(300);
+
+                        // input 1 (to put just 1 item from Backpack to AuctionHouse)
                         inputSimulator.Keyboard.TextEntry("1");
                         Thread.Sleep(300);
-                        ClickSomePoint(221, 325, false);
-                        Thread.Sleep(100);
+
+                        //Click on Agree button in dialog
                         ClickSomePoint(221, 325, true);
 
                         String priceG = goldTextBox.Text;
                         String priceS = silverTextBox.Text;
 
+                        //Set the price (Gold and Silver) and put the item
                         inputSimulator.Keyboard.TextEntry(priceG);
-                        Thread.Sleep(300);
                         Thread.Sleep(300);
                         ClickSomePoint(280, 325, false);
                         Thread.Sleep(200);
@@ -315,6 +298,7 @@ namespace AHAB
                         if (!isRunning)
                             break;
 
+                        //Preventing AFK buy nonesense mouse moving and clicking
                         ClickSomePoint(210, 500, false);
                         Thread.Sleep(200);
                         ClickSomePoint(210, 500, true);
@@ -545,7 +529,28 @@ namespace AHAB
             public MOUSEINPUT mi;
         }
 
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F12)
+            {
+                isRunning = !isRunning;
+                
+                if (isRunning)
+                {
+                    if (checkThread == null)
+                        checkThread = new(Check);
 
+                    if (!checkThread.IsAlive)
+                        checkThread.Start();
+
+                    tts.SpeakAsync("Started");
+                }
+                else
+                {
+                    tts.SpeakAsync("Stopped");
+                }
+            }
+        }
 
 
     }
